@@ -1,0 +1,12 @@
+import 'package:dox_core/dox_core.dart';
+import 'package:your_qr/app/http/controllers/web.controller.dart';
+
+class WebRouter extends Router {
+  @override
+  List<dynamic> get middleware => <dynamic>[];
+
+  @override
+  void register() {
+    Route.get('/ping', (WebController c) => c.pong);
+  }
+}

@@ -1,0 +1,10 @@
+.dart_tool/
+.DS_Store
+.env
+bin/server
+storage/cache
+build/
+*.sqlite
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal

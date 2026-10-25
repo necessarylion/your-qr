@@ -1,6 +1,6 @@
 # Local development:
-#   docker compose up -d postgres   # only the database, then `dox s`
-#   docker compose up -d --build    # the database and the app (AOT image)
+#   docker compose up -d postgres redis   # only Postgres and Redis, then `dox s`
+#   docker compose up -d --build          # Postgres, Redis and the app (AOT image)
 
 services:
   # Http server (production image)
@@ -11,27 +11,43 @@ services:
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     restart: unless-stopped
     ports:
       - "${APP_PORT:-3000}:${APP_PORT:-3000}"
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
 
-  # Postgres database
+  # Postgres database. `your_qr_test` is made too, for `dart test`.
   postgres:
     image: postgres:18
     environment:
       - POSTGRES_USER=${DB_USERNAME:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=${DB_NAME:-postgres}
+      - POSTGRES_DB=${DB_NAME:-your_qr}
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres:/var/lib/postgresql
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'pg_isready', '-q', '-U', '${DB_USERNAME:-postgres}']
+      interval: 5s
+      retries: 5
+
+  # Redis keeps the login sessions.
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       retries: 5
 

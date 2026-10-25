@@ -2,11 +2,12 @@ import 'package:dox_core/dox_core.dart';
 
 part 'env.g.dart';
 
-/// The env of the app, typed. Made by `dox env:generate`.
+/// The env of the app, typed.
 /// -------------------------------
 /// Each getter reads one key: `appName` reads `APP_NAME`.
 /// A getter body is the default. A nullable getter is optional.
 /// Other getters are required: the app stops at startup when one is missing.
+/// A shell variable wins over the `.env` file.
 /// Run `dart run build_runner build` after you change this class.
 @DoxEnv()
 abstract class AppEnv {
@@ -15,7 +16,7 @@ abstract class AppEnv {
     return _$AppEnv.load(reader);
   }
 
-  String get appName => 'dox';
+  String get appName => 'Your QR';
 
   /// development, staging or production
   String get appEnv => 'development';
@@ -24,34 +25,42 @@ abstract class AppEnv {
 
   int get appPort => 3000;
 
-  /// required: used to sign tokens and encrypt cookies
+  /// required: used to encrypt cookies and to hash visitor IPs
   String get appKey;
 
   /// isolates (threads) of the HTTP server. Null: one per CPU core.
   int? get appTotalIsolate;
 
+  /// The public base URL of the short links, like https://yourqr.link.
+  /// Short links are `{APP_URL}/s/{code}`, QR codes point to `{APP_URL}/q/{code}`.
+  String get appUrl => 'http://localhost:3000';
+
   String get logLevel => 'info';
 
-  /// memory, file or redis
-  String get cacheStore => 'file';
-
-  /// local, s3 or memory
-  String get storageDisk => 'local';
-
-  /// sqlite, postgres or mysql
-  String get dbConnection => 'sqlite';
-
-  /// the database name. For SQLite: the file path.
-  String get dbName => 'db/dox.sqlite';
+  /// one log line per request
+  bool get logRequests => true;
 
   String get dbHost => 'localhost';
 
-  /// null: 5432 for Postgres, 3306 for MySQL
-  int? get dbPort;
+  int get dbPort => 5432;
 
   String get dbUsername => 'postgres';
 
-  String get dbPassword => '';
+  String get dbPassword => 'postgres';
+
+  String get dbName => 'your_qr';
+
+  /// Print every SQL query. Slow, so only for debugging.
+  bool get dbDebug => false;
+
+  /// Redis keeps the login sessions.
+  String get redisHost => 'localhost';
+
+  int get redisPort => 6379;
+
+  /// The Vite dev server, like http://localhost:5173, while `npm run dev` runs.
+  /// Empty means the built files in public/build.
+  String? get viteDevServer;
 }
 
 /// The env of the app. Read and checked once, on first use.

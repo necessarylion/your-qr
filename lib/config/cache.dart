@@ -1,16 +1,16 @@
 import 'package:dox_core/dox_core.dart';
 import 'package:your_qr/config/env.dart';
 
-/// Cache stores
-/// -------------------------------
-/// `Cache()` uses the default store. `Cache().store('memory')` picks one.
-/// Drivers: file, memory, redis, null. Values must be JSON types.
+/// Cache stores. The login sessions live in the `redis` store
+/// (see `session` in config/app.dart).
 CacheConfig cache = CacheConfig(
-  defaultStore: env.cacheStore,
+  defaultStore: 'redis',
   stores: <String, Map<String, dynamic>>{
-    'file': <String, dynamic>{'driver': 'file', 'path': 'storage/cache'},
-
-    /// one map per isolate, fast, not shared
-    'memory': <String, dynamic>{'driver': 'memory', 'max_size': 10000},
+    'redis': <String, dynamic>{
+      'driver': 'redis',
+      'host': env.redisHost,
+      'port': env.redisPort,
+      'prefix': 'your_qr:',
+    },
   },
 );

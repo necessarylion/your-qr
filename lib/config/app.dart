@@ -3,54 +3,38 @@ import 'dart:io';
 import 'package:dox_core/dox_core.dart';
 import 'package:your_qr/config/cache.dart';
 import 'package:your_qr/config/cors.dart';
-import 'package:your_qr/config/logger.dart';
 import 'package:your_qr/config/env.dart';
+import 'package:your_qr/config/logger.dart';
+import 'package:your_qr/config/openapi.dart';
 import 'package:your_qr/generated/container.g.dart';
+import 'package:your_qr/generated/dtos.g.dart';
 
 AppConfig appConfig = AppConfig(
-  /// Application secret key
-  /// -------------------------------
-  /// This key is use to encrypt/decrypt the data such as cache and cookies.
-  /// Make sure to keep the `APP_KEY` as an environment variable and secure.
-  ///
-  /// Note: Changing the application key for an existing app will make all
-  /// the cookies and cache invalid and also the existing encrypted data
-  /// will not be decrypted.
+  /// Encrypts cookies. Keep `APP_KEY` secret.
+  /// Changing it logs everyone out.
   appKey: env.appKey,
 
-  /// Server port
-  /// -------------------------------
-  /// App will be running on this port.
   serverPort: env.appPort,
 
-  /// Total isolate (multi thread)
-  /// -------------------------------
   /// Isolates that serve http requests, all on the same port.
-  /// Default is one per CPU core, so the app uses all cores.
-  /// Set `APP_TOTAL_ISOLATE` to change it.
+  /// Default is one per CPU core. Set `APP_TOTAL_ISOLATE` to change it.
   totalIsolate: env.appTotalIsolate ?? Platform.numberOfProcessors,
 
-  /// Global middleware
-  /// -------------------------------
-  /// By registering global middleware here,
-  /// middleware will be applied to all the routes.
-  globalMiddleware: <dynamic>[
-    /// one log line per request. off in production: the proxy logs there.
-    LogMiddleware(enabled: env.appEnv != 'production'),
-  ],
+  /// Every @Dto class, from lib/generated/dtos.g.dart.
+  dtos: dtos,
 
-  /// Container
-  /// -------------------------------
-  /// Every @Inject class, router and service of the app,
-  /// from lib/container.g.dart (made by build_runner).
+  /// Runs on every route. Session and CSRF are only on the dashboard
+  /// routes (see lib/routes/web.dart), not on /api or the short links.
+  globalMiddleware: <dynamic>[LogMiddleware(enabled: env.logRequests)],
+
+  /// Every @Inject class, router and service of the app.
   container: registerContainer,
 
-  /// Cache stores (config/cache.dart)
   cache: cache,
-
-  /// Cors configuration
   cors: cors,
-
-  /// logger configuration
   logger: logger,
+  openApi: openApi,
+
+  /// Sessions live in Redis, so a logout really ends the old session.
+  session: SessionConfig(driver: 'cache', store: 'redis'),
 );

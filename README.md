@@ -20,6 +20,7 @@ lib/
   routes/          public.dart (/s, /q, /build), web.dart (dashboard), api.dart
   app/http/        controllers, dtos (input checks), middleware, serializers
   app/services/    business logic (links, visits, stats, API keys, auth)
+  providers/       start-up classes (database, auth, inertia)
   app/repositories all database access
   app/models/      one model per table
   app/support/     small helpers: QR SVG, random codes, hashes, short URLs

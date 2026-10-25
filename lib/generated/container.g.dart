@@ -24,19 +24,19 @@ import 'package:your_qr/app/support/hasher.dart' as i17;
 import 'package:your_qr/app/support/link_urls.dart' as i18;
 import 'package:your_qr/app/support/qr_svg.dart' as i19;
 import 'package:your_qr/app/support/random_code.dart' as i20;
-import 'package:your_qr/routes/api.dart' as i21;
-import 'package:your_qr/routes/public.dart' as i22;
-import 'package:your_qr/routes/web.dart' as i23;
-import 'package:your_qr/services/auth_service.dart' as i24;
-import 'package:your_qr/services/inertia_service.dart' as i25;
-import 'package:your_qr/services/orm_service.dart' as i26;
+import 'package:your_qr/providers/auth_provider.dart' as i21;
+import 'package:your_qr/providers/inertia_provider.dart' as i22;
+import 'package:your_qr/providers/orm_provider.dart' as i23;
+import 'package:your_qr/routes/api.dart' as i24;
+import 'package:your_qr/routes/public.dart' as i25;
+import 'package:your_qr/routes/web.dart' as i26;
 import 'package:your_qr/app/models/api_key/api_key.model.dart' as i27;
 import 'package:your_qr/app/models/link/link.model.dart' as i28;
 import 'package:your_qr/app/models/user/user.model.dart' as i29;
 import 'package:your_qr/app/models/visit/visit.model.dart' as i30;
 
 /// Puts every class of the app into the container: the
-/// `@Inject()` classes, routers, services and model binders.
+/// `@Inject()` classes, routers, providers and model binders.
 /// Use it in `AppConfig(container: registerContainer)`.
 void registerContainer(IocContainer c) {
   c.singleton<i1.ApiKeyPageController>(
@@ -104,16 +104,18 @@ void registerContainer(IocContainer c) {
   c.singleton<i18.LinkUrls>((IocContainer c) => i18.LinkUrls());
   c.singleton<i19.QrSvg>((IocContainer c) => i19.QrSvg());
   c.singleton<i20.RandomCode>((IocContainer c) => i20.RandomCode());
-  c.router<i21.ApiRouter>(
-    (IocContainer c) => i21.ApiRouter(c.get<i6.ApiKeyAuthMiddleware>()),
+  c.provider<i21.AppAuthProvider>((IocContainer c) => i21.AppAuthProvider());
+  c.provider<i22.AppInertiaProvider>(
+    (IocContainer c) => i22.AppInertiaProvider(),
   );
-  c.router<i22.PublicRouter>((IocContainer c) => i22.PublicRouter());
-  c.router<i23.WebRouter>(
-    (IocContainer c) => i23.WebRouter(c.get<i7.HandleInertiaRequests>()),
+  c.provider<i23.ORMProvider>((IocContainer c) => i23.ORMProvider());
+  c.router<i24.ApiRouter>(
+    (IocContainer c) => i24.ApiRouter(c.get<i6.ApiKeyAuthMiddleware>()),
   );
-  c.service<i24.AppAuthService>((IocContainer c) => i24.AppAuthService());
-  c.service<i25.AppInertiaService>((IocContainer c) => i25.AppInertiaService());
-  c.service<i26.ORMService>((IocContainer c) => i26.ORMService());
+  c.router<i25.PublicRouter>((IocContainer c) => i25.PublicRouter());
+  c.router<i26.WebRouter>(
+    (IocContainer c) => i26.WebRouter(c.get<i7.HandleInertiaRequests>()),
+  );
   c.bindModel<i27.ApiKey>((String id) {
     int? key = int.tryParse(id);
     if (key == null) return null;

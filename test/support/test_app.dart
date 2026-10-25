@@ -37,8 +37,10 @@ class TestApp {
     client = await DoxTestClient.start(appConfig);
 
     // The asset version is in the page data of a first (HTML) visit.
+    // It is null with the dev server (no build).
     TestResponse html = await client.get('/login');
-    version = RegExp(r'"version":"([^"]*)"').firstMatch(html.body)!.group(1)!;
+    version =
+        RegExp(r'"version":"([^"]*)"').firstMatch(html.body)?.group(1) ?? '';
   }
 
   /// The Inertia asset version. Empty with the dev server.

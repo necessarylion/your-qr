@@ -8,3 +8,6 @@ build/
 *.sqlite-journal
 *.sqlite-shm
 *.sqlite-wal
+node_modules/
+public/build/
+public/hot

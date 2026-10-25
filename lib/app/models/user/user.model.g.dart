@@ -8,7 +8,7 @@ part of 'user.model.dart';
 
 // ignore_for_file: always_specify_types
 
-class UserGenerator extends Model<User> with SoftDeletes<User> {
+class UserGenerator extends Model<User> {
   @override
   String get primaryKey => 'id';
 

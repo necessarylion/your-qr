@@ -2,8 +2,10 @@ import 'package:dox_orm/dox_orm.dart';
 
 part 'user.model.g.dart';
 
-@DoxModel(table: 'users', softDelete: true)
+/// One row in the `users` table.
+@DoxModel(table: 'users')
 class User extends UserGenerator {
+  /// Never send the password hash in a response.
   @override
   List<String> get hidden => <String>['password'];
 

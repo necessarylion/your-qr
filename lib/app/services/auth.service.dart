@@ -1,6 +1,6 @@
 import 'package:dox_auth/dox_auth.dart';
 import 'package:dox_core/dox_core.dart';
-import 'package:your_qr/app/http/dtos/auth/auth.dto.dart';
+import 'package:your_qr/app/dtos/auth/auth.dto.dart';
 import 'package:your_qr/app/models/user/user.model.dart';
 import 'package:your_qr/app/repositories/user.repository.dart';
 

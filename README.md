@@ -1,102 +1,147 @@
-<div align="center">
-<img src="https://raw.githubusercontent.com/dartondox/assets/main/dox-logo.png" width="70" />
-</br></br>
-<div style="display:inline-block">
-<img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white" height="20"/> <img src="https://github.com/dartondox/dox/actions/workflows/test.yaml/badge.svg?branch=main" height="20"/> <img src="https://img.shields.io/github/stars/dartondox/dox.svg" height="20"/> <img src="https://img.shields.io/github/forks/dartondox/dox.svg" height="20"/> <img src="https://img.shields.io/github/license/dartondox/dox.svg" height="20"/>
-</div>
-</div>
+# Your QR
 
-## Dox 3.x (alpha)
+Your QR is a short link and QR code service, built with [Dox](https://dartondox.dev).
 
-This branch uses Dox `3.0.0-alpha.12`. It can still change before the stable release.
-Docs: https://dartondox.dev/latest/
+- Make a short link for any long URL: `https://your.host/s/abc1234`.
+- Every link has a QR code. The QR code opens `https://your.host/q/abc1234`,
+  so you can see how many people clicked and how many scanned.
+- See clicks and scans per day.
+- Use the dashboard in the browser, or the REST API with an API key.
 
-You need **Dart 3.13** or newer.
+## What is inside
 
-## Quick start
+- **Dox** (Dart) on the native HTTP server, with Postgres and Redis.
+- **Dashboard**: Inertia + React + Vite (`resources/js`). Login with a session.
+- **REST API** under `/api`, with an API key. Docs at `/docs` in development.
+- Layers: route -> controller -> service -> repository -> model.
+
+```
+lib/
+  routes/          public.dart (/s, /q, /build), web.dart (dashboard), api.dart
+  app/http/        controllers, dtos (input checks), middleware, serializers
+  app/services/    business logic (links, visits, stats, API keys, auth)
+  app/repositories all database access
+  app/models/      one model per table
+  app/support/     small helpers: QR SVG, random codes, hashes, short URLs
+  config/          all config      constants/  all global constants
+db/migration/      the tables (Dart migrations)
+resources/         React pages, CSS and the root HTML page
+test/              end to end tests
+```
+
+## Run in development
+
+You need Dart 3.13+, Node 24+ and Docker.
 
 ```bash
-dart pub global activate dox ^3.0.0-alpha
-dox create my_app
-cd my_app                       # dox create made .env with a new APP_KEY
+cp .env.example .env              # then set APP_KEY (`dox key:generate`)
+docker compose up -d postgres redis
 dart pub get
-dox s                           # dev server with hot reload, http://localhost:3000
+npm install
+
+npm run dev                       # Vite dev server, keep it running
+VITE_DEV_SERVER=http://localhost:5173 dox s
 ```
 
-The app uses SQLite (`db/dox.sqlite`), so it needs no database setup.
-For Postgres, run `docker compose up -d postgres` and set `DB_CONNECTION=postgres` and the `DB_*` keys in `.env`.
+Open http://localhost:3000, sign up, and make your first link.
+The server runs new migrations when it starts.
 
-Test the server:
+Without `npm run dev`, run `npm run build` once. The server then uses `public/build`.
+
+## API
+
+Make an API key on the "API keys" page. The key is shown once.
+Send it in the `Authorization` header. A missing or wrong key gives `401`.
 
 ```bash
-curl http://localhost:3000/api/ping   # pong
+KEY=yqr_your_key_here
+BASE=http://localhost:3000
+
+# create a link (leave out "code" for a random one)
+curl -X POST $BASE/api/links -H "Authorization: Bearer $KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "https://dartondox.dev", "code": "dox", "title": "Dox"}'
+
+# list your links (paged)
+curl "$BASE/api/links?page=1&per_page=20" -H "Authorization: Bearer $KEY"
+
+# one link, change it, delete it
+curl $BASE/api/links/1 -H "Authorization: Bearer $KEY"
+curl -X PATCH $BASE/api/links/1 -H "Authorization: Bearer $KEY" \
+  -H 'Content-Type: application/json' -d '{"title": "New title"}'
+curl -X DELETE $BASE/api/links/1 -H "Authorization: Bearer $KEY"
+
+# the QR code as SVG (size 64 to 2048, default 256)
+curl "$BASE/api/links/1/qr.svg?size=512" -H "Authorization: Bearer $KEY" -o qr.svg
+
+# clicks and scans per day (days 1 to 365, default 30)
+curl "$BASE/api/links/1/stats?days=7" -H "Authorization: Bearer $KEY"
 ```
 
-## Migrations
+The short links themselves need no key: `GET /s/{code}` (click) and
+`GET /q/{code}` (scan) redirect to the long URL. An unknown or expired code gives `404`.
 
-Migrations are Dart files in `db/migration`. Make one with `dox make:migration <name>`.
-The server runs new ones when it starts. You can also run them with the CLI:
-
-```bash
-dox migration:run
-dox migration:rollback
-dox migration:refresh
-dox db:seed
-```
-
-## Queue and scheduler
-
-```bash
-dox make:job SendReport    # a job in lib/app/jobs
-dox queue:work             # run the jobs
-dox schedule:list          # the tasks of lib/config/schedule.dart
-dox schedule:work          # run the tasks on time
-```
+The base URL of the short links comes from `APP_URL`.
 
 ## Tests
+
+The tests use the `your_qr_test` database. `docker compose up` makes it.
 
 ```bash
 dart test
 ```
 
-The tests use the database of `.env`. For another SQLite file: `DB_NAME=test.sqlite dart test`.
+Before a commit: `dart format .` and `dart analyze --fatal-infos`.
 
-## Production
-
-Never use `dart run` or `dox s` in production. They use the JIT, which needs much more memory.
-Build a native (AOT) binary:
+## Build
 
 ```bash
-dox build
+npm run build      # the dashboard into public/build
+dox build          # the AOT server binary into build/bundle
 ```
 
-It makes `build/bundle` with three binaries: `bin/server`, `bin/queue` (the worker) and `bin/schedule` (the scheduler).
-Run the worker and the scheduler as their own processes, next to the server.
+Never run production with `dart run` or `dox s`. They use the JIT, which needs much more memory.
 
-Or use Docker. The image holds only the binary (about 12 MB), on `FROM scratch`.
-It has no `.env` file. Config comes from env variables. A real env variable wins over `.env`.
+## Docker
+
+The image is on GitHub Packages, for `linux/amd64` and `linux/arm64`:
 
 ```bash
-docker compose up -d --build                       # app + postgres
+docker pull ghcr.io/necessarylion/your-qr:latest
 
-docker build -t my-app .                           # or only the image
-docker run -p 3000:3000 --env-file .env -e DB_HOST=my-db-host my-app
+docker run -p 3000:3000 \
+  -e APP_ENV=production \
+  -e APP_KEY=your-32-character-secret-key... \
+  -e APP_URL=https://your.host \
+  -e DB_HOST=db.host -e DB_PORT=5432 -e DB_NAME=your_qr \
+  -e DB_USERNAME=postgres -e DB_PASSWORD=secret \
+  -e REDIS_HOST=redis.host -e REDIS_PORT=6379 \
+  ghcr.io/necessarylion/your-qr:latest
 ```
 
-The app uses one isolate per CPU core. Set `APP_TOTAL_ISOLATE` to change it.
+| Env | Needed | What it is |
+| --- | --- | --- |
+| `APP_KEY` | yes | secret key for cookies and IP hashes. Changing it logs everyone out. |
+| `APP_URL` | yes | public base URL of the short links |
+| `APP_ENV` | no | `production` turns off the API docs. Default `development`. |
+| `APP_PORT` | no | default `3000` |
+| `APP_TOTAL_ISOLATE` | no | server threads. Default: one per CPU core. |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` | yes | Postgres |
+| `REDIS_HOST`, `REDIS_PORT` | yes | Redis (login sessions) |
 
-## Security Vulnerabilities
+Tags: `latest` and `1.2.3` come from git tags `v1.2.3`. `main` and `sha-<short>` come from the main branch.
 
-Dox take the security of our framework seriously. If you identify any security vulnerabilities in our application, please notify us immediately by sending an email to support@dartondox.dev. We appreciate your responsible disclosure and will respond promptly to address and resolve any identified security issues. Your cooperation helps us maintain the integrity and safety of our software for all users.
+Build it yourself, or run the app with Postgres and Redis:
 
-## Contributing
+```bash
+docker build -t your-qr .
+docker compose up -d --build
+```
 
-We welcome contributions from the community! If you'd like to contribute to the Dox framework, please fork the repo and PR to us.
+## Not done yet
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
-## Community
-
-<a href="https://discord.gg/pBfWrsvBSV"><img src="https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white"></a>
+- Visits are saved with one insert before the redirect. Under heavy
+  traffic, move this to a queue job.
+- The dashboard links page has no paging (the API has).
+- Behind a proxy, set `trustedProxies` in `config/app.dart`, so the visitor
+  IP (hashed) is the real one.

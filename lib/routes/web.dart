@@ -34,15 +34,15 @@ class WebRouter extends Router {
 
   /// Pages that need a login. A guest goes to /login.
   void registerDashboard() {
-    Route.get('/links', (LinkPageController c) => c.linksPage);
-    Route.post('/links', (LinkPageController c) => c.storeLink);
-    Route.put('/links/{id}', (LinkPageController c) => c.saveLink);
-    Route.delete('/links/{id}', (LinkPageController c) => c.destroyLink);
-    Route.get('/links/{id}/stats', (LinkPageController c) => c.linkStatsPage);
-    Route.get('/links/{id}/qr.svg', (LinkPageController c) => c.downloadQr);
+    Route.get('/links', (LinkPageController c) => c.index);
+    Route.post('/links', (LinkPageController c) => c.store);
+    Route.put('/links/{id}', (LinkPageController c) => c.update);
+    Route.delete('/links/{id}', (LinkPageController c) => c.destroy);
+    Route.get('/links/{id}/stats', (LinkPageController c) => c.dailyStats);
+    Route.get('/links/{id}/qr.svg', (LinkPageController c) => c.qrSvg);
 
-    Route.get('/api-keys', (ApiKeyPageController c) => c.apiKeysPage);
-    Route.post('/api-keys', (ApiKeyPageController c) => c.storeApiKey);
-    Route.delete('/api-keys/{id}', (ApiKeyPageController c) => c.destroyApiKey);
+    Route.get('/api-keys', (ApiKeyPageController c) => c.index);
+    Route.post('/api-keys', (ApiKeyPageController c) => c.store);
+    Route.delete('/api-keys/{id}', (ApiKeyPageController c) => c.destroy);
   }
 }

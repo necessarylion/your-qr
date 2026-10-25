@@ -37,6 +37,7 @@ jobs:
     env:
       # only for CI, not a real secret
       APP_KEY: ci-only-app-key-ci-only-app-key0
+      APP_ENV: development
       APP_TOTAL_ISOLATE: 1
       DB_HOST: localhost
       DB_PORT: 5432

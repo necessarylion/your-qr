@@ -14,14 +14,14 @@ class ApiKeyPageController {
   ApiKeyPageController(this.keys);
 
   /// GET /api-keys
-  Future<DoxResponse> apiKeysPage(DoxRequest req) async {
+  Future<DoxResponse> index(DoxRequest req) async {
     return inertia(req, 'ApiKeys', <String, dynamic>{
       'keys': await keys.listForUser(_userId(req)),
     });
   }
 
   /// POST /api-keys. The plain key is sent once, in the flash data.
-  Future<DoxResponse> storeApiKey(DoxRequest req, CreateApiKey body) async {
+  Future<DoxResponse> store(DoxRequest req, CreateApiKey body) async {
     NewApiKey created = await keys.create(_userId(req), body.name);
     Inertia.flash(req, 'api_key', created.plainKey);
     Inertia.flash(req, 'message', 'API key "${body.name}" created');
@@ -29,7 +29,7 @@ class ApiKeyPageController {
   }
 
   /// DELETE /api-keys/{id}
-  Future<DoxResponse> destroyApiKey(DoxRequest req, int id) async {
+  Future<DoxResponse> destroy(DoxRequest req, int id) async {
     await keys.delete(_userId(req), id);
     Inertia.flash(req, 'message', 'API key deleted');
     return redirect('/api-keys');

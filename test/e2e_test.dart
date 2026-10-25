@@ -12,8 +12,8 @@ import 'support/test_app.dart';
 void main() {
   TestApp app = TestApp();
   late DoxTestClient client;
-  late Browser ann;
-  late Browser bob;
+  late DoxTestClient ann;
+  late DoxTestClient bob;
   late String annKey;
   late String bobKey;
   late Map<String, dynamic> apiLink;
@@ -37,14 +37,13 @@ void main() {
 
   group('dashboard: sign up and login', () {
     test('a guest is sent to the login page', () async {
-      TestResponse res = await ann.send('GET', '/links');
+      TestResponse res = await ann.get('/links');
       res.expectStatus(302).expectHeader('location', '/login');
     });
 
     test('sign up: bad form goes back with errors', () async {
-      await ann.page('/register');
-      TestResponse res = await ann.send(
-        'POST',
+      await inertiaPage(ann, '/register');
+      TestResponse res = await ann.post(
         '/register',
         body: <String, String>{
           'name': 'A',
@@ -55,14 +54,13 @@ void main() {
       );
       res.expectStatus(302);
       Map<String, dynamic> errors = props(
-        await ann.page('/register'),
+        await inertiaPage(ann, '/register'),
       )['errors'];
       expect(errors.keys, containsAll(<String>['name', 'email', 'password']));
     });
 
     test('sign up: passwords must match', () async {
-      await ann.send(
-        'POST',
+      await ann.post(
         '/register',
         body: <String, String>{
           'name': 'Ann',
@@ -72,14 +70,13 @@ void main() {
         },
       );
       Map<String, dynamic> errors = props(
-        await ann.page('/register'),
+        await inertiaPage(ann, '/register'),
       )['errors'];
       expect(errors['password_confirmation'], 'The passwords do not match');
     });
 
     test('sign up logs in and opens the links page', () async {
-      TestResponse res = await ann.send(
-        'POST',
+      TestResponse res = await ann.post(
         '/register',
         body: <String, String>{
           'name': 'Ann',
@@ -90,7 +87,7 @@ void main() {
       );
       res.expectStatus(302).expectHeader('location', '/links');
 
-      Map<String, dynamic> page = await ann.page('/links');
+      Map<String, dynamic> page = await inertiaPage(ann, '/links');
       expect(page['component'], 'Links');
       expect(props(page)['auth']['user']['name'], 'Ann');
       expect(props(page)['links'], isEmpty);
@@ -100,10 +97,9 @@ void main() {
     });
 
     test('the same email can not sign up twice', () async {
-      Browser other = app.browser();
-      await other.page('/register');
-      await other.send(
-        'POST',
+      DoxTestClient other = app.browser();
+      await inertiaPage(other, '/register');
+      await other.post(
         '/register',
         body: <String, String>{
           'name': 'Ann 2',
@@ -113,19 +109,18 @@ void main() {
         },
       );
       Map<String, dynamic> errors = props(
-        await other.page('/register'),
+        await inertiaPage(other, '/register'),
       )['errors'];
       expect(errors['email'], 'The email has already been taken');
     });
 
     test('logout, wrong password, then login', () async {
-      TestResponse res = await ann.send('POST', '/logout');
+      TestResponse res = await ann.post('/logout');
       res.expectStatus(302).expectHeader('location', '/login');
-      (await ann.send('GET', '/links')).expectStatus(302);
+      (await ann.get('/links')).expectStatus(302);
 
-      await ann.page('/login');
-      res = await ann.send(
-        'POST',
+      await inertiaPage(ann, '/login');
+      res = await ann.post(
         '/login',
         body: <String, String>{
           'email': 'ann@example.com',
@@ -133,11 +128,12 @@ void main() {
         },
       );
       res.expectStatus(302);
-      Map<String, dynamic> errors = props(await ann.page('/login'))['errors'];
+      Map<String, dynamic> errors = props(
+        await inertiaPage(ann, '/login'),
+      )['errors'];
       expect(errors['email'], 'Wrong email or password');
 
-      res = await ann.send(
-        'POST',
+      res = await ann.post(
         '/login',
         body: <String, String>{
           'email': 'ann@example.com',
@@ -145,13 +141,12 @@ void main() {
         },
       );
       res.expectStatus(302).expectHeader('location', '/links');
-      expect((await ann.page('/links'))['component'], 'Links');
+      expect((await inertiaPage(ann, '/links'))['component'], 'Links');
     });
 
     test('bob signs up too', () async {
-      await bob.page('/register');
-      TestResponse res = await bob.send(
-        'POST',
+      await inertiaPage(bob, '/register');
+      TestResponse res = await bob.post(
         '/register',
         body: <String, String>{
           'name': 'Bob',
@@ -166,30 +161,32 @@ void main() {
 
   group('dashboard: links', () {
     test('a form post without the CSRF token gives 419', () async {
-      TestResponse res = await ann.send(
-        'POST',
-        '/links',
-        body: <String, String>{'url': 'https://dartondox.dev'},
-        csrf: false,
-      );
+      // the session cookies of ann, but no X-XSRF-TOKEN header
+      TestResponse res = await client
+          .withHeaders(app.inertiaHeaders())
+          .withCookies(ann.cookies)
+          .post(
+            '/links',
+            body: <String, String>{'url': 'https://dartondox.dev'},
+          );
       res.expectStatus(419);
     });
 
     test('a bad link form goes back with errors', () async {
-      TestResponse res = await ann.send(
-        'POST',
+      TestResponse res = await ann.post(
         '/links',
         body: <String, String>{'url': 'not a url', 'code': 'a b'},
       );
       res.expectStatus(302);
-      Map<String, dynamic> errors = props(await ann.page('/links'))['errors'];
+      Map<String, dynamic> errors = props(
+        await inertiaPage(ann, '/links'),
+      )['errors'];
       expect(errors['url'], 'The url must be a url');
       expect(errors['code'], 'The code format is invalid');
     });
 
     test('create a link with an Inertia POST', () async {
-      TestResponse res = await ann.send(
-        'POST',
+      TestResponse res = await ann.post(
         '/links',
         body: <String, dynamic>{
           'url': 'https://dartondox.dev',
@@ -199,7 +196,7 @@ void main() {
       );
       res.expectStatus(302).expectHeader('location', '/links');
 
-      Map<String, dynamic> page = await ann.page('/links');
+      Map<String, dynamic> page = await inertiaPage(ann, '/links');
       expect(page['flash'], <String, dynamic>{
         'message': 'Short link dox-docs created',
       });
@@ -212,9 +209,8 @@ void main() {
     });
 
     test('edit a link with PUT (303 redirect)', () async {
-      List<dynamic> links = props(await ann.page('/links'))['links'];
-      TestResponse res = await ann.send(
-        'PUT',
+      List<dynamic> links = props(await inertiaPage(ann, '/links'))['links'];
+      TestResponse res = await ann.put(
         '/links/${links.first['id']}',
         body: <String, dynamic>{
           'url': 'https://dartondox.dev/docs',
@@ -223,35 +219,31 @@ void main() {
         },
       );
       res.expectStatus(303).expectHeader('location', '/links');
-      links = props(await ann.page('/links'))['links'];
+      links = props(await inertiaPage(ann, '/links'))['links'];
       expect(links.first['url'], 'https://dartondox.dev/docs');
       expect(links.first['title'], isNull);
     });
 
     test('bob can not see or change the link of ann', () async {
-      List<dynamic> links = props(await ann.page('/links'))['links'];
-      expect(props(await bob.page('/links'))['links'], isEmpty);
-      TestResponse res = await bob.send(
-        'GET',
-        '/links/${links.first['id']}/stats',
-      );
+      List<dynamic> links = props(await inertiaPage(ann, '/links'))['links'];
+      expect(props(await inertiaPage(bob, '/links'))['links'], isEmpty);
+      TestResponse res = await bob.get('/links/${links.first['id']}/stats');
       res.expectStatus(404);
-      res = await bob.send('DELETE', '/links/${links.first['id']}');
+      res = await bob.delete('/links/${links.first['id']}');
       res.expectStatus(404);
     });
   });
 
   group('dashboard: API keys', () {
     test('a new key is shown once', () async {
-      await ann.page('/api-keys');
-      TestResponse res = await ann.send(
-        'POST',
+      await inertiaPage(ann, '/api-keys');
+      TestResponse res = await ann.post(
         '/api-keys',
         body: <String, String>{'name': 'laptop'},
       );
       res.expectStatus(302).expectHeader('location', '/api-keys');
 
-      Map<String, dynamic> page = await ann.page('/api-keys');
+      Map<String, dynamic> page = await inertiaPage(ann, '/api-keys');
       annKey = page['flash']['api_key'] as String;
       expect(annKey, startsWith(AppConstants.apiKeyPrefix));
       List<dynamic> keys = props(page)['keys'];
@@ -259,22 +251,23 @@ void main() {
       expect(keys.single.containsKey('key_hash'), isFalse);
       expect(keys.single['last_used_at'], isNull);
 
-      page = await ann.page('/api-keys');
+      page = await inertiaPage(ann, '/api-keys');
       expect(page['flash'], isNull);
     });
 
     test('an empty name goes back with errors', () async {
-      await ann.send('POST', '/api-keys', body: <String, String>{'name': ''});
+      await ann.post('/api-keys', body: <String, String>{'name': ''});
       Map<String, dynamic> errors = props(
-        await ann.page('/api-keys'),
+        await inertiaPage(ann, '/api-keys'),
       )['errors'];
       expect(errors['name'], 'The name is required');
     });
 
     test('bob makes a key too', () async {
-      await bob.page('/api-keys');
-      await bob.send('POST', '/api-keys', body: <String, String>{'name': 'b'});
-      bobKey = (await bob.page('/api-keys'))['flash']['api_key'] as String;
+      await inertiaPage(bob, '/api-keys');
+      await bob.post('/api-keys', body: <String, String>{'name': 'b'});
+      bobKey =
+          (await inertiaPage(bob, '/api-keys'))['flash']['api_key'] as String;
     });
   });
 
@@ -294,7 +287,7 @@ void main() {
 
     test('a good key works and sets last_used_at', () async {
       (await api(annKey).get('/api/links')).expectStatus(200);
-      List<dynamic> keys = props(await ann.page('/api-keys'))['keys'];
+      List<dynamic> keys = props(await inertiaPage(ann, '/api-keys'))['keys'];
       expect(keys.single['last_used_at'], isNotNull);
     });
 
@@ -457,7 +450,7 @@ void main() {
     });
 
     test('the dashboard shows the counts', () async {
-      List<dynamic> links = props(await ann.page('/links'))['links'];
+      List<dynamic> links = props(await inertiaPage(ann, '/links'))['links'];
       Map<String, dynamic> row = links.firstWhere(
         (dynamic l) => l['id'] == apiLink['id'],
       );
@@ -491,7 +484,8 @@ void main() {
     });
 
     test('dashboard stats page', () async {
-      Map<String, dynamic> page = await ann.page(
+      Map<String, dynamic> page = await inertiaPage(
+        ann,
         '/links/${apiLink['id']}/stats',
       );
       expect(page['component'], 'LinkStats');
@@ -526,8 +520,7 @@ void main() {
     });
 
     test('dashboard: download the SVG', () async {
-      TestResponse res = await ann.send(
-        'GET',
+      TestResponse res = await ann.get(
         '/links/${apiLink['id']}/qr.svg?download=1',
       );
       res.expectStatus(200);
@@ -552,21 +545,15 @@ void main() {
     });
 
     test('dashboard: delete a link (303 redirect)', () async {
-      List<dynamic> links = props(await ann.page('/links'))['links'];
-      TestResponse res = await ann.send(
-        'DELETE',
-        '/links/${links.first['id']}',
-      );
+      List<dynamic> links = props(await inertiaPage(ann, '/links'))['links'];
+      TestResponse res = await ann.delete('/links/${links.first['id']}');
       res.expectStatus(303).expectHeader('location', '/links');
-      expect(props(await ann.page('/links'))['links'], isEmpty);
+      expect(props(await inertiaPage(ann, '/links'))['links'], isEmpty);
     });
 
     test('dashboard: delete an API key, then it stops working', () async {
-      List<dynamic> keys = props(await ann.page('/api-keys'))['keys'];
-      TestResponse res = await ann.send(
-        'DELETE',
-        '/api-keys/${keys.single['id']}',
-      );
+      List<dynamic> keys = props(await inertiaPage(ann, '/api-keys'))['keys'];
+      TestResponse res = await ann.delete('/api-keys/${keys.single['id']}');
       res.expectStatus(303);
       (await api(annKey).get('/api/links')).expectStatus(401);
     });
@@ -579,7 +566,29 @@ void main() {
       res.expectStatus(200);
       Map<String, dynamic> paths = res.json['paths'];
       expect(paths.keys, contains('/api/links/{id}/qr.svg'));
-      expect(paths['/api/links']['post']['security'], isNotEmpty);
+      expect(paths['/api/links']['post']['security'], <dynamic>[
+        <String, dynamic>{'apiKeyAuth': <dynamic>[]},
+      ]);
+      expect(res.json['components']['securitySchemes'], <String, dynamic>{
+        'apiKeyAuth': <String, dynamic>{
+          'type': 'http',
+          'scheme': 'bearer',
+          'bearerFormat': 'API key',
+        },
+      });
+      // the API and the public short links, not the dashboard or its files
+      expect(paths.keys, <String>[
+        '/api/links',
+        '/api/links/{id}',
+        '/api/links/{id}/qr.svg',
+        '/api/links/{id}/stats',
+        '/s/{code}',
+        '/q/{code}',
+      ]);
+      expect(paths['/api/links']['get']['summary'], 'List your links');
+      expect(paths['/api/links']['post']['summary'], 'Create a short link');
+      expect(paths['/api/links/{id}']['patch']['summary'], 'Change a link');
+      expect(paths['/api/links/{id}']['delete']['summary'], 'Delete a link');
     });
   });
 }

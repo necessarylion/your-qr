@@ -8,9 +8,10 @@ dependencies:
   dox_core: ^3.0.0-alpha.12
   dox_orm: ^3.0.0-alpha.11
   dox_migration: ^3.0.0-alpha.11
-  dox_queue: ^3.0.0-alpha.3
-  dox_scheduler: ^3.0.0-alpha.1
-  dox_storage: ^3.0.0-alpha.12
+  dox_auth: ^3.0.0-alpha.12
+  dox_inertia: ^3.0.0-alpha.3
+  qr: ^4.0.0
+  crypto: ^3.0.7
 
 dev_dependencies:
   dox_builder: ^3.0.0-alpha.12

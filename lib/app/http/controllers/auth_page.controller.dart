@@ -1,6 +1,6 @@
 import 'package:dox_core/dox_core.dart';
 import 'package:dox_inertia/dox_inertia.dart';
-import 'package:your_qr/app/http/dtos/auth.dto.dart';
+import 'package:your_qr/app/http/dtos/auth/auth.dto.dart';
 import 'package:your_qr/app/services/auth.service.dart';
 
 /// Dashboard sign up, login and logout (session login, `web` guard).

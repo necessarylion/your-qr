@@ -3,8 +3,8 @@
 // ignore_for_file: type=lint
 
 import 'package:dox_core/dox_core.dart';
-import 'package:your_qr/app/http/dtos/auth.dto.dart';
-import 'package:your_qr/app/http/dtos/link.dto.dart';
+import 'package:your_qr/app/http/dtos/auth/auth.dto.dart';
+import 'package:your_qr/app/http/dtos/link/link.dto.dart';
 
 /// Every DTO of the app. Use it in `AppConfig(dtos: dtos)`.
 const List<DtoSchema<Object>> dtos = <DtoSchema<Object>>[

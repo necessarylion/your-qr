@@ -43,7 +43,8 @@ function CreateForm({ errors }) {
 
   function submit(e) {
     e.preventDefault()
-    form.transform(toBody).post('/links', { onSuccess: () => form.reset() })
+    form.transform(toBody)
+    form.post('/links', { onSuccess: () => form.reset() })
   }
 
   return (
@@ -67,7 +68,7 @@ function EditForm({ link, errors, onDone }) {
     e.preventDefault()
     // the code can not be empty when editing, so always send it
     form.transform((data) => ({ ...toBody(data), code: data.code }))
-      .put(`/links/${link.id}`, { errorBag: 'edit', onSuccess: onDone })
+    form.put(`/links/${link.id}`, { errorBag: 'edit', onSuccess: onDone })
   }
 
   return (

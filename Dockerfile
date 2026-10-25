@@ -1,10 +1,22 @@
-# Production image: an AOT-compiled binary on an empty (scratch) base.
+# Production image: an AOT-compiled binary on an empty (scratch) base,
+# plus the built dashboard files.
 # Never run production with `dart run`. It uses the JIT: more memory and
 # a slower start.
 #
-#   docker build -t my-app .
-#   docker run -p 3000:3000 --env-file .env -e DB_HOST=... my-app
+#   docker build -t your-qr .
+#   docker run -p 3000:3000 --env-file .env -e DB_HOST=... -e REDIS_HOST=... your-qr
 
+# 1. The dashboard (React + Vite). The output is the same on every
+# platform, so it runs on the build machine only.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY vite.config.js ./
+COPY resources ./resources
+RUN npm run build
+
+# 2. The server binary.
 FROM dart:stable AS build
 
 # Resolve dependencies first, so this layer is cached.
@@ -20,27 +32,23 @@ RUN dart run build_runner build --delete-conflicting-outputs
 # build hooks. Native libraries go to build/bundle/lib.
 RUN dart build cli --target bin/server.dart --output build
 
-# The queue worker and the scheduler are binaries too. They run as their
-# own processes: `/app/bin/queue work` and `/app/bin/schedule work`.
-RUN dart build cli --target bin/queue.dart --output build/queue \
-  && cp build/queue/bundle/bin/queue build/bundle/bin/ \
-  && dart build cli --target bin/schedule.dart --output build/schedule \
-  && cp build/schedule/bundle/bin/schedule build/bundle/bin/
-
 # Lay out the final file tree:
-# /app/bin/server, /app/bin/queue, /app/bin/schedule, /app/lib (native libraries), /app/db/migration,
-# /app/storage and a writable /tmp (uploads bigger than 1 MB are
-# streamed to a temp file).
-RUN mkdir -p /out/app/storage /out/tmp \
+# /app/bin/server, /app/lib (native libraries), /app/db/migration,
+# /app/resources/views (the Inertia root page), /app/public/build (the
+# dashboard), /app/storage and a writable /tmp (uploads bigger than 1 MB
+# are streamed to a temp file).
+COPY --from=frontend /app/public/build /out/app/public/build
+RUN mkdir -p /out/app/storage /out/app/resources /out/tmp \
   && chmod 1777 /out/tmp \
   && cp -r build/bundle/. /out/app/ \
   && cp -r db /out/app/db \
+  && cp -r resources/views /out/app/resources/views \
   # the native HTTP server (Rust) needs libgcc_s, which /runtime/ does not have
   && LIBGCC=$(find / -name libgcc_s.so.1 -path '*lib*' | head -n 1) \
   && mkdir -p /out$(dirname $LIBGCC) && cp $LIBGCC /out$LIBGCC
 
-# Minimal serving image: the AOT runtime files from the dart image
-# (`/runtime/`) plus our bundle. No Dart SDK, no source code.
+# 3. Minimal serving image: the AOT runtime files from the dart image
+# (`/runtime/`) plus our bundle. No Dart SDK, no Node, no source code.
 FROM scratch
 COPY --from=build /runtime/ /
 COPY --from=build /out/ /

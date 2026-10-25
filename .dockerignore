@@ -9,3 +9,6 @@ build/
 .idea/
 .env
 storage/
+node_modules/
+public/build/
+public/hot

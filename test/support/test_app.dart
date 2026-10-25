@@ -17,10 +17,9 @@ class TestApp {
   bool _madeHot = false;
 
   Future<void> start() async {
-    // The test database. A shell DB_NAME wins, like in CI.
+    // Under `dart test`, Dox reads .env.testing on top of .env
+    // (the test database). A shell DB_NAME wins, like in CI.
     Env().load();
-    Env().env['DB_NAME'] = 'your_qr_test';
-    Env().env['LOG_REQUESTS'] = 'false';
 
     Migrator migrator = Migrator(
       migrations: migrations,
@@ -46,8 +45,15 @@ class TestApp {
   /// The Inertia asset version. Empty with the dev server.
   String version = '';
 
-  Browser browser() {
-    return Browser(client, version);
+  /// A new browser: keeps cookies, sends the CSRF token and the
+  /// Inertia headers on every request.
+  DoxTestClient browser() {
+    return client.withSession().withHeaders(inertiaHeaders());
+  }
+
+  /// Headers of a request from the Inertia client.
+  Map<String, String> inertiaHeaders() {
+    return <String, String>{'X-Inertia': 'true', 'X-Inertia-Version': version};
   }
 
   Future<void> stop() async {
@@ -58,62 +64,14 @@ class TestApp {
   }
 }
 
-/// Keeps cookies between requests like a browser, and sends the
-/// XSRF-TOKEN cookie back in the X-XSRF-TOKEN header (like the Inertia client).
-class Browser {
-  final DoxTestClient client;
-  final Map<String, String> cookies = <String, String>{};
-
-  /// The Inertia asset version, sent on every request.
-  final String version;
-
-  Browser(this.client, this.version);
-
-  /// Headers of a request from the Inertia client.
-  Map<String, String> inertiaHeaders() {
-    return <String, String>{'X-Inertia': 'true', 'X-Inertia-Version': version};
+/// GET an Inertia page as JSON.
+Future<Map<String, dynamic>> inertiaPage(
+  DoxTestClient browser,
+  String path,
+) async {
+  TestResponse res = await browser.get(path);
+  if (res.status != 200) {
+    throw StateError('GET $path gave ${res.status}: ${res.body}');
   }
-
-  Future<TestResponse> send(
-    String method,
-    String path, {
-    Object? body,
-    bool csrf = true,
-  }) async {
-    Map<String, String> headers = inertiaHeaders();
-    if (cookies.isNotEmpty) {
-      List<String> pairs = <String>[];
-      for (MapEntry<String, String> c in cookies.entries) {
-        pairs.add('${c.key}=${c.value}');
-      }
-      headers['Cookie'] = pairs.join('; ');
-    }
-    String? token = cookies['XSRF-TOKEN'];
-    if (csrf && token != null) {
-      headers['X-XSRF-TOKEN'] = Uri.decodeComponent(token);
-    }
-    TestResponse res = await client.send(
-      method,
-      path,
-      body: body,
-      headers: headers,
-    );
-    for (MapEntry<String, String> c in res.cookies.entries) {
-      if (c.value.isEmpty) {
-        cookies.remove(c.key);
-      } else {
-        cookies[c.key] = c.value;
-      }
-    }
-    return res;
-  }
-
-  /// GET an Inertia page as JSON.
-  Future<Map<String, dynamic>> page(String path) async {
-    TestResponse res = await send('GET', path);
-    if (res.status != 200) {
-      throw StateError('GET $path gave ${res.status}: ${res.body}');
-    }
-    return res.json as Map<String, dynamic>;
-  }
+  return res.json as Map<String, dynamic>;
 }

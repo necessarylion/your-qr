@@ -17,12 +17,12 @@ class ApiRouter extends Router {
 
   @override
   void register() {
-    Route.get('/links', (LinkApiController c) => c.listLinks);
-    Route.post('/links', (LinkApiController c) => c.createLink);
-    Route.get('/links/{id}', (LinkApiController c) => c.showLink);
-    Route.patch('/links/{id}', (LinkApiController c) => c.updateLink);
-    Route.delete('/links/{id}', (LinkApiController c) => c.deleteLink);
-    Route.get('/links/{id}/qr.svg', (LinkApiController c) => c.linkQrSvg);
-    Route.get('/links/{id}/stats', (LinkApiController c) => c.linkStats);
+    Route.get('/links', (LinkApiController c) => c.index);
+    Route.post('/links', (LinkApiController c) => c.store);
+    Route.get('/links/{id}', (LinkApiController c) => c.show);
+    Route.patch('/links/{id}', (LinkApiController c) => c.update);
+    Route.delete('/links/{id}', (LinkApiController c) => c.destroy);
+    Route.get('/links/{id}/qr.svg', (LinkApiController c) => c.qrSvg);
+    Route.get('/links/{id}/stats', (LinkApiController c) => c.dailyStats);
   }
 }

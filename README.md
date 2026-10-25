@@ -86,6 +86,8 @@ The base URL of the short links comes from `APP_URL`.
 ## Tests
 
 The tests use the `your_qr_test` database. `docker compose up` makes it.
+`dart test` reads `.env.testing` on top of `.env`, so it never touches your real database.
+Keep `APP_ENV=development` in `.env`: the tests check the API docs, and the docs are on only in development.
 
 ```bash
 dart test
@@ -123,7 +125,7 @@ docker run -p 3000:3000 \
 | --- | --- | --- |
 | `APP_KEY` | yes | secret key for cookies and IP hashes. Changing it logs everyone out. |
 | `APP_URL` | yes | public base URL of the short links |
-| `APP_ENV` | no | `production` turns off the API docs. Default `development`. |
+| `APP_ENV` | no | `development` turns on the API docs at `/docs`. Not set: `production` (docs off, error details hidden). |
 | `APP_PORT` | no | default `3000` |
 | `APP_TOTAL_ISOLATE` | no | server threads. Default: one per CPU core. |
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` | yes | Postgres |

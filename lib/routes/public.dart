@@ -16,6 +16,8 @@ class PublicRouter extends Router {
   }
 
   /// The file names have a hash, so the browser can keep them for a year.
+  /// Not part of the API docs.
+  @ApiIgnore()
   DoxResponse buildFile(String path) {
     if (path.contains('..')) {
       throw NotFoundHttpException();

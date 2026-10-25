@@ -13,9 +13,6 @@ import 'package:your_qr/app/support/qr_svg.dart';
 
 /// The REST API for links. Every route needs an API key, and only
 /// shows the links of the key owner.
-///
-/// ponytail: method names are unique in the app on purpose.
-/// dox_openapi mixes up two routes with the same method name.
 @Inject()
 class LinkApiController {
   final LinkService links;
@@ -28,10 +25,7 @@ class LinkApiController {
   /// List your links
   ///
   /// Newest first.
-  Future<Map<String, dynamic>> listLinks(
-    DoxRequest req,
-    ListLinks query,
-  ) async {
+  Future<Map<String, dynamic>> index(DoxRequest req, ListLinks query) async {
     Pagination<Link> page = await links.paginate(
       _userId(req),
       query.page,
@@ -47,31 +41,27 @@ class LinkApiController {
   ///
   /// Leave `code` out for a random code.
   @Response(201, LinkSerializer, description: 'The new link')
-  Future<DoxResponse> createLink(DoxRequest req, CreateLink body) async {
+  Future<DoxResponse> store(DoxRequest req, CreateLink body) async {
     Link link = await links.create(_userId(req), body);
     return response(LinkSerializer(link, urls)).statusCode(201);
   }
 
   /// Get one link
-  Future<LinkSerializer> showLink(DoxRequest req, int id) async {
+  Future<LinkSerializer> show(DoxRequest req, int id) async {
     return LinkSerializer(await links.find(_userId(req), id), urls);
   }
 
   /// Change a link
   ///
   /// Only the keys you send are changed.
-  Future<LinkSerializer> updateLink(
-    DoxRequest req,
-    int id,
-    UpdateLink body,
-  ) async {
+  Future<LinkSerializer> update(DoxRequest req, int id, UpdateLink body) async {
     return LinkSerializer(await links.update(_userId(req), id, body), urls);
   }
 
   /// Delete a link
   ///
   /// Its visits are deleted too.
-  Future<Map<String, String>> deleteLink(DoxRequest req, int id) async {
+  Future<Map<String, String>> destroy(DoxRequest req, int id) async {
     await links.delete(_userId(req), id);
     return <String, String>{'message': 'Link deleted'};
   }
@@ -79,14 +69,14 @@ class LinkApiController {
   /// QR code (SVG)
   ///
   /// The QR code opens /q/{code}, so each scan is counted.
-  Future<DoxResponse> linkQrSvg(DoxRequest req, int id, QrOptions query) async {
+  Future<DoxResponse> qrSvg(DoxRequest req, int id, QrOptions query) async {
     Link link = await links.find(_userId(req), id);
     String svg = qr.render(urls.scan(link.code!), query.size);
     return response(svg).contentType(ContentType('image', 'svg+xml'));
   }
 
   /// Clicks and scans per day
-  Future<Map<String, dynamic>> linkStats(
+  Future<Map<String, dynamic>> dailyStats(
     DoxRequest req,
     int id,
     StatsOptions query,

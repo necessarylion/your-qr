@@ -1,39 +1,14 @@
-import 'package:dox_auth/dox_auth.dart' show UnAuthorizedException;
+import 'package:dox_auth/dox_auth.dart';
 import 'package:dox_core/dox_core.dart';
 import 'package:your_qr/app/models/user/user.model.dart';
 import 'package:your_qr/app/services/api_key.service.dart';
 
-/// The user of an API key, in the same shape that dox_auth uses,
-/// so controllers can read `req.auth?.user<User>()`.
-class ApiKeyAuth implements IAuth {
-  final User _user;
-
-  ApiKeyAuth(this._user);
-
-  @override
-  Future<void> verifyToken(IDoxRequest req) async {}
-
-  @override
-  bool isLoggedIn() {
-    return true;
-  }
-
-  @override
-  T? user<T>() {
-    return _user as T;
-  }
-
-  @override
-  Map<String, dynamic>? toJson() {
-    return _user.toJson();
-  }
-}
-
 /// Checks the header `Authorization: Bearer <api key>` on /api routes.
 /// A missing or unknown key gives 401.
+/// Controllers then read the key owner with `req.auth?.user<User>()`.
 ///
-/// The name ends with `AuthMiddleware`, so the API docs show these routes
-/// with a bearer token.
+/// The API docs show these routes with a bearer "API key" scheme.
+@Security.bearer(format: 'API key')
 @Inject()
 class ApiKeyAuthMiddleware implements IDoxMiddleware {
   final ApiKeyService keys;
@@ -50,7 +25,7 @@ class ApiKeyAuthMiddleware implements IDoxMiddleware {
     if (user == null) {
       throw UnAuthorizedException(message: 'Invalid API key');
     }
-    req.merge(<String, dynamic>{AUTH_REQUEST_KEY: ApiKeyAuth(user)});
+    Auth().setUser(req, user);
     return req;
   }
 }

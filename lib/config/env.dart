@@ -18,8 +18,8 @@ abstract class AppEnv {
 
   String get appName => 'Your QR';
 
-  /// development, staging or production
-  String get appEnv => 'development';
+  /// development, staging or production. Not set: production.
+  String get appEnv => 'production';
 
   bool get isDevelopment => appEnv == 'development';
 

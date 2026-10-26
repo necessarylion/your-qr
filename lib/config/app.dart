@@ -27,7 +27,7 @@ AppConfig appConfig = AppConfig(
   /// routes (see lib/routes/web.dart), not on /api or the short links.
   globalMiddleware: <dynamic>[LogMiddleware(enabled: env.logRequests)],
 
-  /// Every @Inject class, router and service of the app.
+  /// Every @Inject class, router and provider of the app.
   container: registerContainer,
 
   cache: cache,

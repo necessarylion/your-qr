@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dox_core/dox_core.dart';
 import 'package:dox_inertia/dox_inertia.dart';
-import 'package:your_qr/app/http/dtos/link.dto.dart';
+import 'package:your_qr/app/dtos/link/link.dto.dart';
 import 'package:your_qr/app/http/serializers/link.serializer.dart';
 import 'package:your_qr/app/models/link/link.model.dart';
 import 'package:your_qr/app/models/user/user.model.dart';

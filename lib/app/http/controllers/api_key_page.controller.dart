@@ -1,6 +1,6 @@
 import 'package:dox_core/dox_core.dart';
 import 'package:dox_inertia/dox_inertia.dart';
-import 'package:your_qr/app/http/dtos/auth.dto.dart';
+import 'package:your_qr/app/dtos/auth/auth.dto.dart';
 import 'package:your_qr/app/models/user/user.model.dart';
 import 'package:your_qr/app/services/api_key.service.dart';
 

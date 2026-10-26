@@ -1,6 +1,6 @@
 import 'package:dox_core/dox_core.dart';
 import 'package:dox_orm/dox_orm.dart';
-import 'package:your_qr/app/http/dtos/link.dto.dart';
+import 'package:your_qr/app/dtos/link/link.dto.dart';
 import 'package:your_qr/app/models/link/link.model.dart';
 import 'package:your_qr/app/repositories/link.repository.dart';
 import 'package:your_qr/app/support/random_code.dart';

@@ -30,14 +30,10 @@ class ApiKeyRepository {
 
   /// Gives false when the key does not exist or belongs to someone else.
   Future<bool> deleteForUser(int userId, int id) async {
-    ApiKey? key = await ApiKey()
+    int deleted = await ApiKey()
         .where('id', id)
         .where('user_id', userId)
-        .getFirst();
-    if (key == null) {
-      return false;
-    }
-    await ApiKey().where('id', id).delete();
-    return true;
+        .delete();
+    return deleted > 0;
   }
 }

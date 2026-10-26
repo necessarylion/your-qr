@@ -186,40 +186,45 @@ packages:
     source: hosted
     version: "3.1.14"
   dox_annotation:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "../dox/packages/dox-annotation"
-      relative: true
-    source: path
-    version: "3.0.0-alpha.15"
+      name: dox_annotation
+      sha256: "740c89ceb420351d74f036083063af68cd52e1630a3b8da3124c17f4976f3b07"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0-alpha.17"
   dox_auth:
     dependency: "direct main"
     description:
-      path: "../dox/packages/dox-auth"
-      relative: true
-    source: path
-    version: "3.0.0-alpha.15"
+      name: dox_auth
+      sha256: "83f12cf9ebaa5bc5fa9f197d6cb844e03925625c3d24fe67eb8956395923159f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0-alpha.17"
   dox_builder:
     dependency: "direct dev"
     description:
-      path: "../dox/packages/dox-builder"
-      relative: true
-    source: path
-    version: "3.0.0-alpha.15"
+      name: dox_builder
+      sha256: "39cf5349d57c3b6458642ad974d61f4239fa6234dfbb030a561f95179adc807c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0-alpha.17"
   dox_cache:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "../dox/packages/dox-cache"
-      relative: true
-    source: path
-    version: "3.0.0-alpha.15"
+      name: dox_cache
+      sha256: d24256759d6ae7b51cee2948981ee3f3ee81f909acd1774eb8e53e6b6c200f16
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0-alpha.17"
   dox_core:
     dependency: "direct main"
     description:
-      path: "../dox/packages/dox-core"
-      relative: true
-    source: path
-    version: "3.0.0-alpha.15"
+      name: dox_core
+      sha256: dfff6ffb34c0eeed9b174b338f7a48fc2c9d8720018f053876c4da05cd70ddb3
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0-alpha.17"
   dox_http_native:
     dependency: transitive
     description:
@@ -231,17 +236,19 @@ packages:
   dox_inertia:
     dependency: "direct main"
     description:
-      path: "../dox-inertia"
-      relative: true
-    source: path
+      name: dox_inertia
+      sha256: "542faf711671264b66aab4a1e5cf7047bf749c1a635ced0f686e3a79eebcdffb"
+      url: "https://pub.dev"
+    source: hosted
     version: "3.0.0-alpha.4"
   dox_migration:
     dependency: "direct main"
     description:
-      path: "../dox-orm/packages/dox-migration"
-      relative: true
-    source: path
-    version: "3.0.0-alpha.11"
+      name: dox_migration
+      sha256: "330c653face05d13836a75fe2abfdc91df6632dd3801a1b671a9babc2fe66bbe"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0-alpha.12"
   dox_mysql_native:
     dependency: transitive
     description:
@@ -251,19 +258,21 @@ packages:
     source: hosted
     version: "3.0.0-alpha.7"
   dox_openapi:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "../dox/packages/dox-openapi"
-      relative: true
-    source: path
-    version: "3.0.0-alpha.15"
+      name: dox_openapi
+      sha256: f06f09f62a806ac4b66f6304bab2ea6aca5f0cca8bc17e84990efa5d5c971358
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0-alpha.17"
   dox_orm:
     dependency: "direct main"
     description:
-      path: "../dox-orm/packages/dox-orm"
-      relative: true
-    source: path
-    version: "3.0.0-alpha.11"
+      name: dox_orm
+      sha256: "47bc95c2c3827f504ca4a1b12a5901b111d571be4142a15ee299e7aaec0b0346"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0-alpha.12"
   dox_postgres_native:
     dependency: transitive
     description:
@@ -272,20 +281,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0-alpha.8"
-  dox_query_builder:
-    dependency: "direct overridden"
-    description:
-      path: "../dox-orm/packages/dox-query-builder"
-      relative: true
-    source: path
-    version: "3.0.0-alpha.11"
   dox_validation:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "../dox/packages/dox-validation"
-      relative: true
-    source: path
-    version: "3.0.0-alpha.15"
+      name: dox_validation
+      sha256: "1ebbe666bc0de5222fb615b0a27e404a39379920b0710cb86b20c5f961046346"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0-alpha.17"
   ffi:
     dependency: transitive
     description:
@@ -378,10 +381,10 @@ packages:
     dependency: transitive
     description:
       name: ioredis
-      sha256: "47203df8f0b71b0f19f184e25fd91541426d1a154c322e2cb7a67c79e6754215"
+      sha256: fb9b8cc6ded0c3f27d14396d4e7426ade605ae9e04a5c1c942a17947c9647b27
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0-alpha.3"
+    version: "3.0.0"
   json_annotation:
     dependency: transitive
     description:

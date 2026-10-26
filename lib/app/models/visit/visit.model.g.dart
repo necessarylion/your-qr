@@ -85,4 +85,40 @@ class VisitGenerator extends Model<Visit> {
 
     return map;
   }
+
+  @override
+  bool setColumnValue(String column, dynamic value) {
+    Visit instance = this as Visit;
+    switch (column) {
+      case 'id':
+        if (value is! int?) return false;
+        instance.id = value;
+        return true;
+      case 'link_id':
+        if (value is! int?) return false;
+        instance.linkId = value;
+        return true;
+      case 'source':
+        if (value is! String?) return false;
+        instance.source = value;
+        return true;
+      case 'ip_hash':
+        if (value is! String?) return false;
+        instance.ipHash = value;
+        return true;
+      case 'user_agent':
+        if (value is! String?) return false;
+        instance.userAgent = value;
+        return true;
+      case 'referer':
+        if (value is! String?) return false;
+        instance.referer = value;
+        return true;
+      case 'created_at':
+        if (value is! DateTime?) return false;
+        instance.createdAt = value;
+        return true;
+    }
+    return false;
+  }
 }

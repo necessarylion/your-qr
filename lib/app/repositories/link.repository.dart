@@ -14,7 +14,7 @@ class LinkRepository {
   }
 
   Future<bool> codeExists(String code) async {
-    return await Link().where('code', code).count() > 0;
+    return await Link().where('code', code).hasRows();
   }
 
   /// Only finds a link of this user.

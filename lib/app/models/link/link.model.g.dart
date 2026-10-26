@@ -92,4 +92,44 @@ class LinkGenerator extends Model<Link> {
 
     return map;
   }
+
+  @override
+  bool setColumnValue(String column, dynamic value) {
+    Link instance = this as Link;
+    switch (column) {
+      case 'id':
+        if (value is! int?) return false;
+        instance.id = value;
+        return true;
+      case 'user_id':
+        if (value is! int?) return false;
+        instance.userId = value;
+        return true;
+      case 'code':
+        if (value is! String?) return false;
+        instance.code = value;
+        return true;
+      case 'url':
+        if (value is! String?) return false;
+        instance.url = value;
+        return true;
+      case 'title':
+        if (value is! String?) return false;
+        instance.title = value;
+        return true;
+      case 'expires_at':
+        if (value is! DateTime?) return false;
+        instance.expiresAt = value;
+        return true;
+      case 'created_at':
+        if (value is! DateTime?) return false;
+        instance.createdAt = value;
+        return true;
+      case 'updated_at':
+        if (value is! DateTime?) return false;
+        instance.updatedAt = value;
+        return true;
+    }
+    return false;
+  }
 }

@@ -89,4 +89,40 @@ class ApiKeyGenerator extends Model<ApiKey> {
 
     return map;
   }
+
+  @override
+  bool setColumnValue(String column, dynamic value) {
+    ApiKey instance = this as ApiKey;
+    switch (column) {
+      case 'id':
+        if (value is! int?) return false;
+        instance.id = value;
+        return true;
+      case 'user_id':
+        if (value is! int?) return false;
+        instance.userId = value;
+        return true;
+      case 'name':
+        if (value is! String?) return false;
+        instance.name = value;
+        return true;
+      case 'key_hash':
+        if (value is! String?) return false;
+        instance.keyHash = value;
+        return true;
+      case 'last_used_at':
+        if (value is! DateTime?) return false;
+        instance.lastUsedAt = value;
+        return true;
+      case 'created_at':
+        if (value is! DateTime?) return false;
+        instance.createdAt = value;
+        return true;
+      case 'updated_at':
+        if (value is! DateTime?) return false;
+        instance.updatedAt = value;
+        return true;
+    }
+    return false;
+  }
 }
